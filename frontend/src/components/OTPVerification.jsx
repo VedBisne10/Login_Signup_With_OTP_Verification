@@ -83,63 +83,42 @@ function OTPVerification({ email, onSuccess, onBack }) {
 
     // Display the OTP form.
     return (
-        <div className="auth-container">
-
-            <div className="auth-card">
-
-                <h1>Verify OTP</h1>
-
-                <p>
-                    OTP sent to:
-                </p>
-
-                <strong>
-                    {email}
-                </strong>
-
-                <form onSubmit={handleVerifyOTP}>
-
-                    <label>
-                        Enter OTP
-                    </label>
-
-                    <input
-                        type="text"
-                        placeholder="Enter 6-digit OTP"
-                        value={otp}
-                        maxLength="6"
-                        onChange={(event) =>
-                            setOtp(event.target.value)
-                        }
-                    />
-
-                    {error && (
-                        <p className="error">
-                            {error}
-                        </p>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading
-                            ? "Verifying..."
-                            : "Verify OTP"
-                        }
-                    </button>
-
-                </form>
-
+        <div className="auth-card">
+            <h1>Verify OTP</h1>
+            <p> OTP sent to: </p>
+            <strong> {email} </strong>
+            <form onSubmit={handleVerifyOTP}>
+                <label>
+                    Enter OTP
+                </label>
+                <input
+                    type="text"
+                    placeholder="Enter 6-digit OTP"
+                    value={otp}
+                    maxLength="6"
+                    onChange={(event) =>
+                        setOtp(event.target.value)
+                    }
+                />
+                {error && (
+                    <p className="error"> {error} </p>
+                )}
                 <button
-                    className="secondary-button"
-                    onClick={onBack}
+                    type="submit"
+                    disabled={loading}
                 >
-                    Change Email
+                {loading
+                    ? "Verifying..."
+                    : "Verify OTP"
+                }
                 </button>
-
-            </div>
-
+            </form>
+            <button
+                className="secondary-button"
+                onClick={onBack}
+            >
+                Change Email
+            </button>
         </div>
     );
 }

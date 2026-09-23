@@ -64,15 +64,16 @@ function Login({ onOTPSent }) {
             // Tell App.jsx that OTP was successfully sent, pass the OTP too.
             onOTPSent(email, data.otp);
 
-        } catch (error) {
+        } 
+        catch (error) {
 
             // Display a network error.
             setError(
                 "Unable to connect to the server."
             );
 
-        } finally {
-
+        } 
+        finally {
             // Stop the loading state.
             setLoading(false);
         }
@@ -80,51 +81,32 @@ function Login({ onOTPSent }) {
 
     // Display the login form.
     return (
-        <div className="auth-container">
-
-            <div className="auth-card">
-
-                <h1>Welcome</h1>
-
-                <p>
-                    Enter your email to continue.
-                </p>
-
-                <form onSubmit={handleSendOTP}>
-
-                    <label>
-                        Email
-                    </label>
-
-                    <input
-                        type="email"
-                        placeholder="Enter your email"
-                        value={email}
-                        onChange={(event) =>
-                            setEmail(event.target.value)
-                        }
-                    />
-
-                    {error && (
-                        <p className="error">
-                            {error}
-                        </p>
-                    )}
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                    >
-                        {loading
-                            ? "Sending OTP..."
-                            : "Send OTP"
-                        }
-                    </button>
-
-                </form>
-
-            </div>
-
+        <div className="auth-card">
+            <h1>Welcome</h1>
+            <p> Enter your email to continue. </p>
+            <form onSubmit={handleSendOTP}>
+                <label> Email </label>
+                <input 
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange = {(event) =>
+                        setEmail(event.target.value)
+                    }
+                />
+                {error && (
+                    <p className="error"> {error} </p>
+                )}
+                <button
+                    type="submit"
+                    disabled={loading}
+                >
+                {loading
+                    ? "Sending OTP..."
+                    : "Send OTP"
+                }
+                </button>
+            </form>
         </div>
     );
 }
