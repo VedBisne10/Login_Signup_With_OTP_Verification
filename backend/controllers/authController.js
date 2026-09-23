@@ -20,7 +20,7 @@ const sendOTP = async (req, res) => {
 
         const otp = generateOTP();
 
-        const expiresAt = new Date(Date.now() + 50 * 60 * 1000);
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
         await OTP.deleteMany({
             email : normalizedEmail
@@ -60,10 +60,7 @@ const sendOTP = async (req, res) => {
             const errorText = await emailResponse.text();
 
             // Log the EmailJS error.
-            console.error(
-                "EmailJS error:",
-                errorText
-            );
+            console.error("EmailJS error:", errorText);
 
             // Delete the OTP because the email wasn't sent.
             await OTP.deleteMany({
