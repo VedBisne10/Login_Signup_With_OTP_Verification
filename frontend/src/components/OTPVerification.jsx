@@ -1,127 +1,135 @@
-// Import the useState hook.
+// ─────────────────────────────────────────────
+// OTPVerification.jsx
+// The second screen — shown after the user submits their email.
+// It displays the email the OTP was sent to, shows the OTP
+// (for testing purposes), and provides an input for the user
+// to type the OTP and verify it.
+// ─────────────────────────────────────────────
+
+// useState lets us track the OTP input, loading state, and errors.
 import { useState } from "react";
 
-// Create the OTP verification component.
-function OTPVerification({ email, onSuccess, onBack }) {
+// Props received from App.jsx:
+//   email     — the email address the OTP was sent to (for display)
+//   otp       — the OTP returned by the backend (shown on screen for testing)
+//   onSuccess — called when verification succeeds, triggers the success screen
+//   onBack    — called when the user wants to go back and change their email
+function OTPVerification({ email, otp, onSuccess, onBack }) {
 
-    // Store the OTP entered by the user.
-    const [otp, setOtp] = useState("");
+    // Holds whatever the user types into the OTP input field.
+    const [enteredOtp, setEnteredOtp] = useState("");
 
-    // Store the loading state.
+    // True while we're waiting for the backend to respond.
     const [loading, setLoading] = useState(false);
 
-    // Store error messages.
+    // Holds an error message if verification fails.
     const [error, setError] = useState("");
 
-    // Handle OTP verification.
+    // Runs when the user clicks "Verify OTP".
     const handleVerifyOTP = async (event) => {
 
-        // Prevent page refresh.
+        // Stop the browser from refreshing the page.
         event.preventDefault();
 
-        // Clear previous errors.
+        // Clear any previous error.
         setError("");
 
-        // Check whether the OTP was entered.
-        if (!otp.trim()) {
+        // Don't proceed if the OTP field is empty.
+        if (!enteredOtp.trim()) {
             setError("Please enter the OTP.");
             return;
         }
 
-        // Start loading.
+        // Show the loading state while the request is in flight.
         setLoading(true);
 
         try {
-
-            // Send the email and OTP to the backend.
+            // Send the email and OTP to the backend for verification.
             const response = await fetch(
                 "http://localhost:5000/api/auth/verify-otp",
                 {
-                    // Use POST.
                     method: "POST",
-
                     // Tell the backend we're sending JSON.
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    // Send email and OTP.
+                    headers: { "Content-Type": "application/json" },
+                    // Send both the email and the OTP the user typed.
                     body: JSON.stringify({
                         email: email,
-                        otp: otp
+                        otp: enteredOtp
                     })
                 }
             );
 
-            // Convert response to JSON.
+            // Parse the JSON response.
             const data = await response.json();
 
-            // Check whether verification failed.
+            // If verification failed, show the error message from the backend.
             if (!response.ok) {
-                setError(
-                    data.message || "OTP verification failed."
-                );
+                setError(data.message || "OTP verification failed.");
                 return;
             }
 
-            // Tell App.jsx that login was successful.
+            // OTP verified — tell App.jsx to show the success screen.
             onSuccess();
 
         } catch (error) {
-
-            // Display network error.
-            setError(
-                "Unable to connect to the server."
-            );
+            // This runs if the server is down or there's no internet.
+            setError("Unable to connect to the server.");
 
         } finally {
-
-            // Stop loading.
+            // Always stop loading when done.
             setLoading(false);
         }
     };
 
-    // Display the OTP form.
     return (
-        <div className="auth-card">
-            <h1>Verify OTP</h1>
-            <p> OTP sent to: </p>
-            <strong> {email} </strong>
-            <form onSubmit={handleVerifyOTP}>
-                <label>
-                    Enter OTP
-                </label>
-                <input
-                    type="text"
-                    placeholder="Enter 6-digit OTP"
-                    value={otp}
-                    maxLength="6"
-                    onChange={(event) =>
-                        setOtp(event.target.value)
-                    }
-                />
-                {error && (
-                    <p className="error"> {error} </p>
+        <div className="auth-container">
+            <div className="auth-card">
+
+                <h1>Verify OTP</h1>
+
+                {/* Show the email address the OTP was sent to */}
+                <p>OTP sent to:</p>
+                <strong>{email}</strong>
+
+                {/* Show the OTP on screen (only useful during development/testing).
+                    In production this would be sent via email instead. */}
+                {otp && (
+                    <p className="otp-display">
+                        Your OTP: <strong>{otp}</strong>
+                    </p>
                 )}
-                <button
-                    type="submit"
-                    disabled={loading}
-                >
-                {loading
-                    ? "Verifying..."
-                    : "Verify OTP"
-                }
+
+                <form onSubmit={handleVerifyOTP}>
+
+                    <label>Enter OTP</label>
+
+                    {/* Controlled input — limited to 6 characters */}
+                    <input
+                        type="text"
+                        placeholder="Enter 6-digit OTP"
+                        value={enteredOtp}
+                        maxLength="6"
+                        onChange={(event) => setEnteredOtp(event.target.value)}
+                    />
+
+                    {/* Only show the error paragraph if there's an error */}
+                    {error && <p className="error">{error}</p>}
+
+                    {/* Button text changes while waiting for the backend */}
+                    <button type="submit" disabled={loading}>
+                        {loading ? "Verifying..." : "Verify OTP"}
+                    </button>
+
+                </form>
+
+                {/* Lets the user go back and enter a different email */}
+                <button className="secondary-button" onClick={onBack}>
+                    Change Email
                 </button>
-            </form>
-            <button
-                className="secondary-button"
-                onClick={onBack}
-            >
-                Change Email
-            </button>
+
+            </div>
         </div>
     );
 }
 
-// Export the component.
 export default OTPVerification;

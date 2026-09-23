@@ -1,115 +1,115 @@
-// Import the useState hook from React.
+// ─────────────────────────────────────────────
+// Login.jsx
+// The first screen the user sees.
+// It shows an email input field and a "Send OTP" button.
+// When submitted, it calls the backend to generate an OTP
+// and then notifies App.jsx to move to the next screen.
+// ─────────────────────────────────────────────
+
+// useState lets us track the email input, loading state, and errors.
 import { useState } from "react";
 
-// Create the Login component.
+// onOTPSent is a function passed in from App.jsx.
+// We call it when the OTP has been successfully sent,
+// passing along the email and the OTP from the backend response.
 function Login({ onOTPSent }) {
 
-    // Store the email entered by the user.
+    // Holds whatever the user has typed in the email field.
     const [email, setEmail] = useState("");
 
-    // Store the loading state.
+    // True while we're waiting for the backend to respond.
+    // Used to disable the button so the user can't submit twice.
     const [loading, setLoading] = useState(false);
 
-    // Store any error message.
+    // Holds an error message to show below the input if something goes wrong.
     const [error, setError] = useState("");
 
-    // Handle the Send OTP button.
+    // Runs when the user clicks "Send OTP".
     const handleSendOTP = async (event) => {
 
-        // Prevent the browser from refreshing the page.
+        // Stop the browser from refreshing the page on form submit.
         event.preventDefault();
 
-        // Remove any previous error.
+        // Clear any error from a previous attempt.
         setError("");
 
-        // Check whether the email field is empty.
+        // Don't proceed if the email field is empty.
         if (!email.trim()) {
             setError("Please enter your email.");
             return;
         }
 
-        // Start the loading state.
+        // Show the loading state while the request is in flight.
         setLoading(true);
 
         try {
-
-            // Send the email to our backend.
+            // Send the email to the backend's send-otp endpoint.
             const response = await fetch(
                 "http://localhost:5000/api/auth/send-otp",
                 {
-                    // Use POST because we are sending data.
                     method: "POST",
-
-                    // Tell the backend that we're sending JSON.
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    // Convert the email into JSON.
-                    body: JSON.stringify({
-                        email: email
-                    })
+                    // Tell the backend we're sending JSON.
+                    headers: { "Content-Type": "application/json" },
+                    // Convert the email object to a JSON string.
+                    body: JSON.stringify({ email: email })
                 }
             );
 
-            // Convert the backend response into JavaScript.
+            // Parse the JSON response from the backend.
             const data = await response.json();
 
-            // Check whether the request failed.
+            // If the backend returned an error status, show the message.
             if (!response.ok) {
                 setError(data.message || "Failed to send OTP.");
                 return;
             }
 
-            // Tell App.jsx that OTP was successfully sent, pass the OTP too.
+            // Success — tell App.jsx the OTP was sent.
+            // Pass both the email and the OTP so App.jsx can store them.
             onOTPSent(email, data.otp);
 
-        } 
-        catch (error) {
+        } catch (error) {
+            // This runs if the server is down or there's no internet.
+            setError("Unable to connect to the server.");
 
-            // Display a network error.
-            setError(
-                "Unable to connect to the server."
-            );
-
-        } 
-        finally {
-            // Stop the loading state.
+        } finally {
+            // Always stop loading, whether the request succeeded or failed.
             setLoading(false);
         }
     };
 
-    // Display the login form.
     return (
-        <div className="auth-card">
-            <h1>Welcome</h1>
-            <p> Enter your email to continue. </p>
-            <form onSubmit={handleSendOTP}>
-                <label> Email </label>
-                <input 
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange = {(event) =>
-                        setEmail(event.target.value)
-                    }
-                />
-                {error && (
-                    <p className="error"> {error} </p>
-                )}
-                <button
-                    type="submit"
-                    disabled={loading}
-                >
-                {loading
-                    ? "Sending OTP..."
-                    : "Send OTP"
-                }
-                </button>
-            </form>
+        <div className="auth-container">
+            <div className="auth-card">
+
+                <h1>Welcome</h1>
+                <p>Enter your email to continue.</p>
+
+                <form onSubmit={handleSendOTP}>
+
+                    <label>Email</label>
+
+                    {/* Controlled input — value comes from state, updates state on change */}
+                    <input
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                    />
+
+                    {/* Only show the error paragraph if there's an error to display */}
+                    {error && <p className="error">{error}</p>}
+
+                    {/* Button text changes to "Sending OTP..." while loading */}
+                    <button type="submit" disabled={loading}>
+                        {loading ? "Sending OTP..." : "Send OTP"}
+                    </button>
+
+                </form>
+
+            </div>
         </div>
     );
 }
 
-// Export the Login component.
 export default Login;

@@ -1,85 +1,83 @@
-// Import the useState hook from React.
+// ─────────────────────────────────────────────
+// App.jsx
+// The root component of the frontend.
+// It decides which screen to show the user:
+//   "login"   → the email input form
+//   "otp"     → the OTP verification form
+//   "success" → the success message after login
+// It also holds shared state (email and OTP) that
+// needs to be passed between the screens.
+// ─────────────────────────────────────────────
+
+// useState lets us track which screen is active and
+// store the email and OTP across screen transitions.
 import { useState } from "react";
 
-// Import the Login component.
+// The three screens of the app.
 import Login from "./components/Login";
-
-// Import the OTP verification component.
 import OTPVerification from "./components/OTPVerification";
-
-// Import the success component.
 import Success from "./components/Success";
 
-// Import the CSS file.
+// Global styles for the app.
 import "./App.css";
 
-// Create the main App component.
 function App() {
 
-    // Store the current screen.
+    // Tracks which screen is currently visible.
+    // Starts on "login" when the page first loads.
     const [screen, setScreen] = useState("login");
 
-    // Store the user's email.
+    // Stores the email the user typed on the login screen.
+    // Passed to OTPVerification so it can show "OTP sent to: ..."
     const [email, setEmail] = useState("");
 
-    // Store the OTP received from backend.
+    // Stores the OTP returned by the backend after calling send-otp.
+    // Passed to OTPVerification so it can display the code to the user.
     const [otp, setOtp] = useState("");
 
-    // Called when OTP is successfully sent.
+    // Called by Login when the backend successfully generates an OTP.
+    // Saves the email and OTP, then switches to the OTP screen.
     const handleOTPSent = (userEmail, userOtp) => {
-
-        // Store the email.
         setEmail(userEmail);
-
-        // Store the OTP.
         setOtp(userOtp);
-
-        // Move to the OTP screen.
         setScreen("otp");
     };
 
-    // Called when OTP verification succeeds.
+    // Called by OTPVerification when the backend confirms the OTP is correct.
+    // Switches to the success screen.
     const handleSuccess = () => {
-
-        // Move to the success screen.
         setScreen("success");
     };
 
-    // Go back to the login screen.
+    // Called by OTPVerification when the user clicks "Change Email".
+    // Clears stored data and goes back to the login screen.
     const handleBack = () => {
-
-        // Clear the email.
         setEmail("");
-
-        // Return to login screen.
+        setOtp("");
         setScreen("login");
     };
 
-    // Decide which component to display.
+    // Show the OTP verification screen if we're in the "otp" step.
     if (screen === "otp") {
-
         return (
             <OTPVerification
                 email={email}
+                otp={otp}
                 onSuccess={handleSuccess}
                 onBack={handleBack}
             />
         );
     }
 
-    // Display the success screen.
+    // Show the success screen once the user has been verified.
     if (screen === "success") {
-
         return <Success />;
     }
 
-    // Display the login screen by default.
+    // Default: show the login screen.
     return (
-        <Login
-            onOTPSent={handleOTPSent}
-        />
+        <Login onOTPSent={handleOTPSent} />
     );
 }
 
-// Export the App component.
 export default App;
