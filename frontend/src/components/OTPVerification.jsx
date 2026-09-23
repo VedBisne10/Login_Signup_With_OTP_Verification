@@ -11,10 +11,9 @@ import { useState } from "react";
 
 // Props received from App.jsx:
 //   email     — the email address the OTP was sent to (for display)
-//   otp       — the OTP returned by the backend (shown on screen for testing)
 //   onSuccess — called when verification succeeds, triggers the success screen
 //   onBack    — called when the user wants to go back and change their email
-function OTPVerification({ email, otp, onSuccess, onBack }) {
+function OTPVerification({ email, onSuccess, onBack }) {
 
     // Holds whatever the user types into the OTP input field.
     const [enteredOtp, setEnteredOtp] = useState("");
@@ -90,14 +89,6 @@ function OTPVerification({ email, otp, onSuccess, onBack }) {
                 {/* Show the email address the OTP was sent to */}
                 <p>OTP sent to:</p>
                 <strong>{email}</strong>
-
-                {/* Show the OTP on screen (only useful during development/testing).
-                    In production this would be sent via email instead. */}
-                {otp && (
-                    <p className="otp-display">
-                        Your OTP: <strong>{otp}</strong>
-                    </p>
-                )}
 
                 <form onSubmit={handleVerifyOTP}>
 

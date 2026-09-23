@@ -5,20 +5,14 @@
 //   "login"   → the email input form
 //   "otp"     → the OTP verification form
 //   "success" → the success message after login
-// It also holds shared state (email and OTP) that
-// needs to be passed between the screens.
 // ─────────────────────────────────────────────
 
-// useState lets us track which screen is active and
-// store the email and OTP across screen transitions.
 import { useState } from "react";
 
-// The three screens of the app.
 import Login from "./components/Login";
 import OTPVerification from "./components/OTPVerification";
 import Success from "./components/Success";
 
-// Global styles for the app.
 import "./App.css";
 
 function App() {
@@ -31,15 +25,10 @@ function App() {
     // Passed to OTPVerification so it can show "OTP sent to: ..."
     const [email, setEmail] = useState("");
 
-    // Stores the OTP returned by the backend after calling send-otp.
-    // Passed to OTPVerification so it can display the code to the user.
-    const [otp, setOtp] = useState("");
-
-    // Called by Login when the backend successfully generates an OTP.
-    // Saves the email and OTP, then switches to the OTP screen.
-    const handleOTPSent = (userEmail, userOtp) => {
+    // Called by Login when the backend successfully sends the OTP email.
+    // Saves the email and switches to the OTP screen.
+    const handleOTPSent = (userEmail) => {
         setEmail(userEmail);
-        setOtp(userOtp);
         setScreen("otp");
     };
 
@@ -53,7 +42,6 @@ function App() {
     // Clears stored data and goes back to the login screen.
     const handleBack = () => {
         setEmail("");
-        setOtp("");
         setScreen("login");
     };
 
@@ -62,7 +50,6 @@ function App() {
         return (
             <OTPVerification
                 email={email}
-                otp={otp}
                 onSuccess={handleSuccess}
                 onBack={handleBack}
             />

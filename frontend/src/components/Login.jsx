@@ -65,8 +65,7 @@ function Login({ onOTPSent }) {
             }
 
             // Success — tell App.jsx the OTP was sent.
-            // Pass both the email and the OTP so App.jsx can store them.
-            onOTPSent(email, data.otp);
+            onOTPSent(email);
 
         } catch (error) {
             // This runs if the server is down or there's no internet.

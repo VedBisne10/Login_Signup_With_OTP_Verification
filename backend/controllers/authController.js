@@ -48,8 +48,8 @@ const sendOTP = async (req, res) => {
         // Generate a fresh 6-digit OTP.
         const otp = generateOTP();
 
-        // Calculate the expiry time: 50 minutes from right now.
-        const expiresAt = new Date(Date.now() + 50 * 60 * 1000);
+        // Calculate the expiry time: 5 minutes from right now.
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
         // Remove any previous OTP for this email so old codes can't be reused.
         await OTP.deleteMany({ email: normalizedEmail });
@@ -61,16 +61,51 @@ const sendOTP = async (req, res) => {
             expiresAt: expiresAt
         });
 
-        // Send the OTP back in the response.
-        // In a production app you would email this instead of returning it.
+        // Build the payload EmailJS expects.
+        // service_id, template_id, and user_id come from the .env file.
+        // template_params must match the variable names in your EmailJS template.
+        const emailData = {
+            service_id: process.env.EMAILJS_SERVICE_ID,
+            template_id: process.env.EMAILJS_TEMPLATE_ID,
+            user_id: process.env.EMAILJS_PUBLIC_KEY,
+            template_params: {
+                email: normalizedEmail,
+                otp: otp
+            }
+        };
+
+        // Send the OTP email via the EmailJS REST API.
+        const emailResponse = await fetch(
+            "https://api.emailjs.com/api/v1.0/email/send",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(emailData)
+            }
+        );
+
+        // If EmailJS rejected the request, roll back the OTP and return an error.
+        if (!emailResponse.ok) {
+            const errorText = await emailResponse.text();
+            console.error("EmailJS error:", errorText);
+
+            // Delete the saved OTP since the email was never delivered.
+            await OTP.deleteMany({ email: normalizedEmail });
+
+            return res.status(500).json({
+                message: "Failed to send OTP email."
+            });
+        }
+
+        // Email sent successfully — tell the frontend to move to the OTP screen.
+        // Do NOT include the OTP in this response; the user should read it from email.
         res.status(200).json({
-            message: "OTP Generated Successfully.",
-            otp: otp
+            message: "OTP sent successfully."
         });
     } catch (error) {
-        // Something unexpected went wrong — return a 500 error.
+        console.error("Send OTP error:", error.message);
         res.status(500).json({
-            message: "Failed to generate OTP.",
+            message: "Failed to send OTP.",
             error: error.message
         });
     }
